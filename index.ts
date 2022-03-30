@@ -55,4 +55,23 @@ app.post('/sign-up', async (req, res) => {
   }
 });
 
+app.post('/sign-in', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { username } });
+    // @ts-ignore
+    const passwordMatches = bcrypt.compareSync(password, user.password);
+    //@ts-ignore
+    delete user.password;
+    if (user && passwordMatches) {
+      res.send({ user, token: createToken(user.id) });
+    } else {
+      throw Error('Boom');
+    }
+  } catch (err) {
+    res.status(400).send({ error: 'Email/password invalid.' });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server up on http://localhost:${PORT}`));
