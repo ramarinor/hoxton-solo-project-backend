@@ -81,7 +81,6 @@ app.get('/validate', async (req, res) => {
     const user = await getUserFromToken(token);
     res.send({ user: user });
   } catch (err) {
-    // @ts-ignore
     res.status(400).send({ error: 'Session expired or invalid token' });
   }
 });
