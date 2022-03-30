@@ -74,4 +74,16 @@ app.post('/sign-in', async (req, res) => {
   }
 });
 
+app.get('/validate', async (req, res) => {
+  const token = req.headers.authorization || '';
+
+  try {
+    const user = await getUserFromToken(token);
+    res.send({ user: user });
+  } catch (err) {
+    // @ts-ignore
+    res.status(400).send({ error: 'Session expired or invalid token' });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server up on http://localhost:${PORT}`));
