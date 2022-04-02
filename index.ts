@@ -38,6 +38,11 @@ async function getUserFromToken(token: string) {
   return user;
 }
 
+function sortBydate(a: { createdAt: Date }, b: { createdAt: Date }) {
+  if (a.createdAt > b.createdAt) return -1;
+  else return 1;
+}
+
 app.post('/sign-up', async (req, res) => {
   const { firstName, lastName, username, password, image } = req.body;
 
@@ -79,10 +84,53 @@ app.get('/validate', async (req, res) => {
 
   try {
     const user = await getUserFromToken(token);
-    res.send({ user: user });
+    res.send({ user });
   } catch (err) {
     res.status(400).send({ error: 'Session expired or invalid token' });
   }
 });
+
+app.get('/articles', async (req, res) => {
+  try {
+    const articles = await prisma.article.findMany();
+    articles.sort(sortBydate);
+    res.send(articles);
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
+app.get('/articles/:category', async (req, res) => {
+  const category = req.params.category;
+  try {
+    const articles = await prisma.article.findMany({
+      where: { category: { name: category } }
+    });
+    articles.sort(sortBydate);
+    res.send(articles);
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
+app.get('/article/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const article = await prisma.article.findUnique({
+      where: { id },
+      include: { user: { select: USER_SELECT }, category: true }
+    });
+    if (article) {
+      res.send({ article });
+    }
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
+
 
 app.listen(PORT, () => console.log(`Server up on http://localhost:${PORT}`));
