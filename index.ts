@@ -91,6 +91,7 @@ app.get('/validate', async (req, res) => {
 });
 
 app.get('/articles', async (req, res) => {
+  console.log('first');
   try {
     const articles = await prisma.article.findMany();
     articles.sort(sortBydate);
@@ -103,6 +104,7 @@ app.get('/articles', async (req, res) => {
 
 app.get('/articles/:category', async (req, res) => {
   const category = req.params.category;
+  console.log('test');
   try {
     const articles = await prisma.article.findMany({
       where: { category: { name: category } }
@@ -124,6 +126,8 @@ app.get('/article/:id', async (req, res) => {
     });
     if (article) {
       res.send({ article });
+    } else {
+      res.send({ error: 'Article not found' });
     }
   } catch (err) {
     //@ts-ignore
@@ -131,6 +135,35 @@ app.get('/article/:id', async (req, res) => {
   }
 });
 
+app.post('/articles', async (req, res) => {
+  const token = req.headers.authorization || '';
 
+  const { title, content, image, categoryId } = req.body;
+  try {
+    const user = await getUserFromToken(token);
+    if (!user) {
+      res
+        .status(401)
+        .send({ error: 'Please sign in as a Journalist to create an article' });
+      return;
+    }
+    if (user.roleId === 3) {
+      res.status(401).send({
+        error:
+          'Only journalist accounts can create articles. Please contact the admin to upgrade your role!'
+      });
+      return;
+    }
+    await prisma.article.create({
+      data: { title, content, image, categoryId, userId: user.id }
+    });
+    res.send({ message: 'Article successfully created!' });
+  } catch (err) {
+    //@ts-ignore
+    res
+      .status(400)
+      .send({ error: 'Please sign in as a Journalist to create an article' });
+  }
+});
 
 app.listen(PORT, () => console.log(`Server up on http://localhost:${PORT}`));
