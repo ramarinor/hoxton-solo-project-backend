@@ -91,7 +91,6 @@ app.get('/validate', async (req, res) => {
 });
 
 app.get('/articles', async (req, res) => {
-  console.log('first');
   try {
     const articles = await prisma.article.findMany();
     articles.sort(sortBydate);
@@ -104,7 +103,6 @@ app.get('/articles', async (req, res) => {
 
 app.get('/articles/:category', async (req, res) => {
   const category = req.params.category;
-  console.log('test');
   try {
     const articles = await prisma.article.findMany({
       where: { category: { name: category } }
@@ -159,10 +157,90 @@ app.post('/articles', async (req, res) => {
     });
     res.send({ message: 'Article successfully created!' });
   } catch (err) {
-    //@ts-ignore
     res
       .status(400)
       .send({ error: 'Please sign in as a Journalist to create an article' });
+  }
+});
+
+app.patch('/articles/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const token = req.headers.authorization || '';
+  const { title, content, image, categoryId } = req.body;
+  try {
+    const user = await getUserFromToken(token);
+    const article = await prisma.article.findUnique({ where: { id } });
+    if (!article) {
+      res.status(404).send({ error: 'Article not found' });
+      return;
+    }
+    if (!user) {
+      res.status(401).send({
+        error: 'Please sign in as a Journalist to update your article'
+      });
+      return;
+    }
+    if (user.id === article.userId || user.id === 1) {
+      await prisma.article.update({
+        where: { id },
+        data: { title, content, image, categoryId }
+      });
+      res.send({ message: 'Article successfully updated' });
+    } else {
+      res
+        .status(404)
+        .send({ error: 'You are not allowed to change this article' });
+    }
+  } catch (err) {
+    res
+      .status(401)
+      .send({ error: 'Please sign in as a Journalist to update your article' });
+  }
+});
+
+app.delete('/articles/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const token = req.headers.authorization || '';
+  try {
+    const user = await getUserFromToken(token);
+    const article = await prisma.article.findUnique({ where: { id } });
+    if (!article) {
+      res.status(404).send({ error: 'Article not found' });
+      return;
+    }
+    if (!user) {
+      res.status(401).send({
+        error: 'Please sign in as a Journalist to delete your article'
+      });
+      return;
+    }
+    if (user.id === article.userId || user.id === 1) {
+      await prisma.article.delete({ where: { id } });
+      res.send({ message: 'Article successfully deleted' });
+    } else {
+      res
+        .status(404)
+        .send({ error: 'You are not allowed to change this article' });
+    }
+  } catch (err) {
+    //@ts-ignore
+    res
+      .status(401)
+      .send({ error: 'Please sign in as a Journalist to delete your article' });
+  }
+});
+
+app.get('/comments/:articleId', async (req, res) => {
+  const articleId = Number(req.params.articleId);
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { articleId }
+    });
+    comments.sort(sortBydate);
+    res.send(comments);
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
   }
 });
 
