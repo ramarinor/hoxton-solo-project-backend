@@ -376,4 +376,56 @@ app.delete('/comments/:id', async (req, res) => {
   }
 });
 
+app.get('/users', async (req, res) => {
+  const token = req.headers.authorization || '';
+  try {
+    const user = await getUserFromToken(token);
+    if (user && user.roleId === 1) {
+      const users = await prisma.user.findMany({ select: USER_SELECT });
+      res.send({ users });
+    } else {
+      res.status(401).send({ error: "You're not view to see all users!" });
+    }
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.message });
+  }
+});
+
+app.patch('/users/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const token = req.headers.authorization || '';
+  const { roleId } = req.body;
+  try {
+    const user = await getUserFromToken(token);
+    if (user && user.roleId === 1) {
+      await prisma.user.update({ where: { id }, data: { roleId } });
+      res.send({ message: 'Changes saved successfully' });
+    } else {
+      res.status(401).send({ error: "You're not view to see all users!" });
+    }
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: err.message });
+  }
+});
+
+app.get('/users/:username', async (req, res) => {
+  const username = req.params.username;
+  try {
+    const user = prisma.user.findUnique({
+      where: { username },
+      select: { ...USER_SELECT, articles: true }
+    });
+    if (user) {
+      res.send({ user });
+    } else {
+      res.status(404).send({ error: 'User not found ' });
+    }
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server up on http://localhost:${PORT}`));
