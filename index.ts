@@ -234,7 +234,41 @@ app.get('/comments/:articleId', async (req, res) => {
   const articleId = Number(req.params.articleId);
   try {
     const comments = await prisma.comment.findMany({
-      where: { articleId }
+      where: { articleId },
+      include: { user: { select: USER_SELECT } }
+    });
+    comments.sort(sortBydate);
+    res.send(comments);
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
+app.post('/comments', async (req, res) => {
+  const { content, articleId } = req.body;
+  const token = req.headers.authorization || '';
+  try {
+    const user = await getUserFromToken(token);
+    const article = await prisma.article.findUnique({
+      where: { id: articleId }
+    });
+    if (!article) {
+      res.status(404).send({ error: 'Article not found' });
+      return;
+    }
+    if (!user) {
+      res.status(401).send({
+        error: 'Please sign in to comment on this article'
+      });
+      return;
+    }
+    await prisma.comment.create({
+      data: { content, userId: user.id, articleId }
+    });
+    const comments = await prisma.comment.findMany({
+      where: { articleId },
+      include: { user: { select: USER_SELECT } }
     });
     comments.sort(sortBydate);
     res.send(comments);

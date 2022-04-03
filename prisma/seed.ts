@@ -4,16 +4,13 @@ const prisma = new PrismaClient({ log: ['warn', 'error', 'info', 'query'] });
 
 const categories: Prisma.CategoryCreateInput[] = [
   {
-    name: 'Politikë'
+    name: 'Politics'
   },
   {
     name: 'Sport'
   },
   {
-    name: 'Cultbiz'
-  },
-  {
-    name: 'Biznes'
+    name: 'Business'
   },
   {
     name: 'Life'

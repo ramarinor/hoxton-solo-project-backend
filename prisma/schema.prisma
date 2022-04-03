@@ -52,8 +52,8 @@ model Comment {
   id        Int      @id @default(autoincrement())
   content   String
   createdAt DateTime @default(now())
-  User      User    @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   userId    Int
-  article   Article @relation(fields: [articleId], references: [id])
+  article   Article  @relation(fields: [articleId], references: [id])
   articleId Int
 }
