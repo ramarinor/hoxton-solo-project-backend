@@ -278,4 +278,102 @@ app.post('/comments', async (req, res) => {
   }
 });
 
+app.patch('/comments/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const { content } = req.body;
+  const token = req.headers.authorization || '';
+  try {
+    const user = await getUserFromToken(token);
+    const comment = await prisma.comment.findUnique({ where: { id } });
+    if (!comment) {
+      res.status(404).send({ error: 'Comment not found' });
+      return;
+    }
+    const article = await prisma.article.findUnique({
+      where: { id: comment.articleId }
+    });
+    if (!article) {
+      res.status(404).send({ error: 'Article not found' });
+      return;
+    }
+    if (!user) {
+      res.status(401).send({
+        error: 'Please sign in to comment on this article'
+      });
+      return;
+    }
+    if (
+      user.id === comment.userId ||
+      (user.id === article.userId && user.roleId === 2) ||
+      user.roleId === 1
+    ) {
+      await prisma.comment.update({
+        where: { id },
+        data: { content }
+      });
+      const comments = await prisma.comment.findMany({
+        where: { articleId: comment.articleId },
+        include: { user: { select: USER_SELECT } }
+      });
+      comments.sort(sortBydate);
+      res.send(comments);
+    } else {
+      res.status(401).send({
+        error: 'You are not authorized to change this comment'
+      });
+    }
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
+app.delete('/comments/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const token = req.headers.authorization || '';
+  try {
+    const user = await getUserFromToken(token);
+    const comment = await prisma.comment.findUnique({ where: { id } });
+    if (!comment) {
+      res.status(404).send({ error: 'Comment not found' });
+      return;
+    }
+    const article = await prisma.article.findUnique({
+      where: { id: comment.articleId }
+    });
+    if (!article) {
+      res.status(404).send({ error: 'Article not found' });
+      return;
+    }
+    if (!user) {
+      res.status(401).send({
+        error: 'Please sign in to delete your comment on this article'
+      });
+      return;
+    }
+    if (
+      user.id === comment.userId ||
+      (user.id === article.userId && user.roleId === 2) ||
+      user.roleId === 1
+    ) {
+      await prisma.comment.delete({
+        where: { id }
+      });
+      const comments = await prisma.comment.findMany({
+        where: { articleId: comment.articleId },
+        include: { user: { select: USER_SELECT } }
+      });
+      comments.sort(sortBydate);
+      res.send(comments);
+    } else {
+      res.status(401).send({
+        error: 'You are not authorized to delete this comment'
+      });
+    }
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server up on http://localhost:${PORT}`));
