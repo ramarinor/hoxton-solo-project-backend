@@ -370,7 +370,7 @@ app.get('/users', async (req, res) => {
       const users = await prisma.user.findMany({ select: USER_SELECT });
       res.send({ users });
     } else {
-      res.status(401).send({ error: "You're not view to see all users!" });
+      res.status(401).send({ error: "You're not able view to see all users!" });
     }
   } catch (err) {
     //@ts-ignore
