@@ -237,7 +237,6 @@ app.get('/comments/:articleId', async (req, res) => {
       where: { articleId },
       include: { user: { select: USER_SELECT } }
     });
-    comments.sort(sortBydate);
     res.send(comments);
   } catch (err) {
     //@ts-ignore
@@ -270,7 +269,6 @@ app.post('/comments', async (req, res) => {
       where: { articleId },
       include: { user: { select: USER_SELECT } }
     });
-    comments.sort(sortBydate);
     res.send(comments);
   } catch (err) {
     //@ts-ignore
@@ -289,24 +287,14 @@ app.patch('/comments/:id', async (req, res) => {
       res.status(404).send({ error: 'Comment not found' });
       return;
     }
-    const article = await prisma.article.findUnique({
-      where: { id: comment.articleId }
-    });
-    if (!article) {
-      res.status(404).send({ error: 'Article not found' });
-      return;
-    }
+
     if (!user) {
       res.status(401).send({
         error: 'Please sign in to comment on this article'
       });
       return;
     }
-    if (
-      user.id === comment.userId ||
-      (user.id === article.userId && user.roleId === 2) ||
-      user.roleId === 1
-    ) {
+    if (user.id === comment.userId) {
       await prisma.comment.update({
         where: { id },
         data: { content }
@@ -315,7 +303,6 @@ app.patch('/comments/:id', async (req, res) => {
         where: { articleId: comment.articleId },
         include: { user: { select: USER_SELECT } }
       });
-      comments.sort(sortBydate);
       res.send(comments);
     } else {
       res.status(401).send({
@@ -363,7 +350,6 @@ app.delete('/comments/:id', async (req, res) => {
         where: { articleId: comment.articleId },
         include: { user: { select: USER_SELECT } }
       });
-      comments.sort(sortBydate);
       res.send(comments);
     } else {
       res.status(401).send({
