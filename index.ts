@@ -215,7 +215,7 @@ app.delete('/articles/:id', async (req, res) => {
       });
       return;
     }
-    if (user.id === article.userId || user.id === 1) {
+    if (user.id === article.userId || user.roleId === 1) {
       await prisma.article.delete({ where: { id } });
       res.send({ message: 'Article successfully deleted' });
     } else {
@@ -224,10 +224,10 @@ app.delete('/articles/:id', async (req, res) => {
         .send({ error: 'You are not allowed to change this article' });
     }
   } catch (err) {
-    //@ts-ignore
     res
       .status(401)
-      .send({ error: 'Please sign in as a Journalist to delete your article' });
+      //@ts-ignore
+      .send({ error: err.message });
   }
 });
 
