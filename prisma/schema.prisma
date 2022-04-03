@@ -18,7 +18,7 @@ model User {
   password  String
   image     String
   role      Role      @relation(fields: [roleId], references: [id])
-  roleId    Int       @default(1)
+  roleId    Int       @default(3)
   articles  Article[]
   comments  Comment[]
 }

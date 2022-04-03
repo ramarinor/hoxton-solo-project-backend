@@ -399,7 +399,7 @@ app.patch('/users/:id', async (req, res) => {
 app.get('/users/:username', async (req, res) => {
   const username = req.params.username;
   try {
-    const user = prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { username },
       select: { ...USER_SELECT, articles: true }
     });
