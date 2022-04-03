@@ -384,15 +384,20 @@ app.patch('/users/:id', async (req, res) => {
   const { roleId } = req.body;
   try {
     const user = await getUserFromToken(token);
+    if (id === 3) {
+      res
+        .status(401)
+        .send({ error: "How dare you try to change the creator's role?" });
+      return;
+    }
     if (user && user.roleId === 1) {
       await prisma.user.update({ where: { id }, data: { roleId } });
       res.send({ message: 'Changes saved successfully' });
     } else {
-      res.status(401).send({ error: "You're not view to see all users!" });
+      res.status(401).send({ error: "You're not able to change user roles!" });
     }
-  } catch (error) {
-    //@ts-ignore
-    res.status(400).send({ error: err.message });
+  } catch (err) {
+    res.status(400).send({ error: 'User was not found' });
   }
 });
 
