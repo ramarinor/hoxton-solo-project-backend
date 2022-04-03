@@ -120,7 +120,7 @@ app.get('/article/:id', async (req, res) => {
   try {
     const article = await prisma.article.findUnique({
       where: { id },
-      include: { user: { select: USER_SELECT }, category: true }
+      include: { user: { select: USER_SELECT } }
     });
     if (article) {
       res.send({ article });
@@ -194,7 +194,6 @@ app.patch('/articles/:id', async (req, res) => {
   } catch (err) {
     res
       .status(401)
-      //@ts-ignore
       .send({ error: 'Please sign in as a Journalist to update your article' });
   }
 });
