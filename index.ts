@@ -180,7 +180,7 @@ app.patch('/articles/:id', async (req, res) => {
       });
       return;
     }
-    if (user.id === article.userId || user.id === 1) {
+    if (user.id === article.userId || user.roleId === 1) {
       await prisma.article.update({
         where: { id },
         data: { title, content, image, categoryId }
@@ -188,12 +188,13 @@ app.patch('/articles/:id', async (req, res) => {
       res.send({ message: 'Article successfully updated' });
     } else {
       res
-        .status(404)
+        .status(401)
         .send({ error: 'You are not allowed to change this article' });
     }
   } catch (err) {
     res
       .status(401)
+      //@ts-ignore
       .send({ error: 'Please sign in as a Journalist to update your article' });
   }
 });
