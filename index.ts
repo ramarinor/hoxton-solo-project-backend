@@ -90,6 +90,16 @@ app.get('/validate', async (req, res) => {
   }
 });
 
+app.get('/categories', async (req, res) => {
+  try {
+    const categories = await prisma.category.findMany();
+    res.send(categories);
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
 app.get('/articles', async (req, res) => {
   try {
     const articles = await prisma.article.findMany();
