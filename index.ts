@@ -100,6 +100,16 @@ app.get('/categories', async (req, res) => {
   }
 });
 
+app.get('/roles', async (req, res) => {
+  try {
+    const roles = await prisma.role.findMany();
+    res.send(roles);
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.messsage });
+  }
+});
+
 app.get('/articles', async (req, res) => {
   try {
     const articles = await prisma.article.findMany();
