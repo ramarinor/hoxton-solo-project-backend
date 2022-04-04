@@ -86,7 +86,9 @@ app.get('/validate', async (req, res) => {
     const user = await getUserFromToken(token);
     res.send({ user });
   } catch (err) {
-    res.status(400).send({ error: 'Session expired or invalid token' });
+    res
+      .status(400)
+      .send({ error: 'Session expired or invalid token. Please login again' });
   }
 });
 
