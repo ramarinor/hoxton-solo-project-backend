@@ -437,6 +437,7 @@ app.get('/users/:username', async (req, res) => {
       select: { ...USER_SELECT, articles: true }
     });
     if (user) {
+      user.articles.sort(sortBydate);
       res.send({ user });
     } else {
       res.status(404).send({ error: 'User not found ' });
