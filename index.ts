@@ -202,7 +202,10 @@ app.patch('/articles/:id', async (req, res) => {
       });
       return;
     }
-    if (user.id === article.userId || user.roleId === 1) {
+    if (
+      (user.id === article.userId && user.roleId === 2) ||
+      user.roleId === 1
+    ) {
       await prisma.article.update({
         where: { id },
         data: { title, content, image, categoryId }
@@ -236,7 +239,10 @@ app.delete('/articles/:id', async (req, res) => {
       });
       return;
     }
-    if (user.id === article.userId || user.roleId === 1) {
+    if (
+      (user.id === article.userId && user.roleId === 2) ||
+      user.roleId === 1
+    ) {
       await prisma.article.delete({ where: { id } });
       res.send({ message: 'Article successfully deleted' });
     } else {
