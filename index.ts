@@ -402,8 +402,7 @@ app.get('/users', async (req, res) => {
       res.status(401).send({ error: "You're not able view to see all users!" });
     }
   } catch (err) {
-    //@ts-ignore
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: "You're not able view to see all users!" });
   }
 });
 
