@@ -396,7 +396,10 @@ app.get('/users', async (req, res) => {
   try {
     const user = await getUserFromToken(token);
     if (user && user.roleId === 1) {
-      const users = await prisma.user.findMany({ select: USER_SELECT });
+      const users = await prisma.user.findMany({
+        select: USER_SELECT,
+        where: { NOT: { id: user.id } }
+      });
       res.send({ users });
     } else {
       res.status(401).send({ error: "You're not able view to see all users!" });
