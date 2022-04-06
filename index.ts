@@ -299,8 +299,9 @@ app.post('/comments', async (req, res) => {
     });
     res.send(comments);
   } catch (err) {
-    //@ts-ignore
-    res.status(400).send({ error: err.messsage });
+    res
+      .status(400)
+      .send({ error: 'Please sign in to comment on this article' });
   }
 });
 
