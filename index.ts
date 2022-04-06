@@ -419,8 +419,11 @@ app.patch('/users/:id', async (req, res) => {
       return;
     }
     if (user && user.roleId === 1) {
-      await prisma.user.update({ where: { id }, data: { roleId } });
-      res.send({ message: 'Changes saved successfully' });
+      const user = await prisma.user.update({
+        where: { id },
+        data: { roleId }
+      });
+      res.send({ message: 'Changes saved successfully', user });
     } else {
       res.status(401).send({ error: "You're not able to change user roles!" });
     }
